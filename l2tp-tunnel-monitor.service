@@ -1,0 +1,35 @@
+[Unit]
+Description=L2TP IPSec Tunnel Monitor Service
+Documentation=https://github.com/your-repo/PROJECT7
+After=l2tp-tunnel-restore.service
+Wants=l2tp-tunnel-restore.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/opt/l2tp-tunnel/l2tp-tunnel-monitor.sh
+ExecReload=/bin/kill -HUP $MAINPID
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=l2tp-tunnel-monitor
+
+# Настройки безопасности
+NoNewPrivileges=false
+PrivateTmp=false
+ProtectSystem=false
+ProtectHome=false
+
+# Настройки перезапуска
+Restart=always
+RestartSec=60
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Переменные окружения
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=SCRIPT_DIR=/opt/l2tp-tunnel
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,38 @@
+[Unit]
+Description=L2TP IPSec Tunnel Restore Service
+Documentation=https://github.com/your-repo/PROJECT7
+After=network.target network-online.target
+Wants=network-online.target
+Requires=ipsec.service xl2tpd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=root
+Group=root
+ExecStart=/opt/l2tp-tunnel/l2tp-tunnel-restore.sh
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=l2tp-tunnel-restore
+
+# Настройки безопасности
+NoNewPrivileges=false
+PrivateTmp=false
+ProtectSystem=false
+ProtectHome=false
+
+# Настройки перезапуска
+Restart=no
+RestartSec=10
+TimeoutStartSec=300
+TimeoutStopSec=30
+
+# Переменные окружения
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=SCRIPT_DIR=/opt/l2tp-tunnel
+
+[Install]
+WantedBy=multi-user.target
+
