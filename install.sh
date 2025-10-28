@@ -96,6 +96,7 @@ copy_files() {
     cp "$SCRIPT_DIR/l2tp-tunnel-diagnostic.sh" "$INSTALL_DIR/"
     cp "$SCRIPT_DIR/l2tp-tunnel-debug.sh" "$INSTALL_DIR/"
     cp "$SCRIPT_DIR/quick-check.sh" "$INSTALL_DIR/"
+    cp "$SCRIPT_DIR/test-fixes.sh" "$INSTALL_DIR/"
     cp "$SCRIPT_DIR/tunnel-config.conf" "$INSTALL_DIR/"
     
     # Устанавливаем права
@@ -105,6 +106,7 @@ copy_files() {
     chmod +x "$INSTALL_DIR/l2tp-tunnel-diagnostic.sh"
     chmod +x "$INSTALL_DIR/l2tp-tunnel-debug.sh"
     chmod +x "$INSTALL_DIR/quick-check.sh"
+    chmod +x "$INSTALL_DIR/test-fixes.sh"
     chmod 644 "$INSTALL_DIR/tunnel-config.conf"
     
     # Устанавливаем владельца
@@ -270,6 +272,7 @@ show_info() {
     log "INFO" "  $INSTALL_DIR/l2tp-tunnel-diagnostic.sh"
     log "INFO" "  $INSTALL_DIR/l2tp-tunnel-debug.sh"
     log "INFO" "  $INSTALL_DIR/quick-check.sh"
+    log "INFO" "  $INSTALL_DIR/test-fixes.sh"
     log "INFO" ""
     log "INFO" "Не забудьте настроить $INSTALL_DIR/tunnel-config.conf под ваши параметры!"
 }

@@ -45,9 +45,9 @@ files=(
 for file in "${files[@]}"; do
     if [[ -f "$file" ]]; then
         echo -e "${GREEN}✓ $file - существует${NC}"
-        if [[ "$file" == *.sh" && -x "$file" ]]; then
+        if [[ "$file" == *.sh && -x "$file" ]]; then
             echo -e "${GREEN}✓ $file - исполняемый${NC}"
-        elif [[ "$file" == *.sh" ]]; then
+        elif [[ "$file" == *.sh ]]; then
             echo -e "${RED}✗ $file - НЕ исполняемый${NC}"
         fi
     else

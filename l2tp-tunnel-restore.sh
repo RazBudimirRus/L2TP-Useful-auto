@@ -156,8 +156,8 @@ start_ipsec_tunnel() {
     
     if command -v ipsec >/dev/null 2>&1; then
         ipsec up l2tp-client
-        log "INFO" "IPSec туннель поднят, ждем 5 секунд"
-        sleep 5
+    log "INFO" "IPSec туннель поднят, ждем 10 секунд для стабилизации"
+    sleep 10
     else
         log "ERROR" "Команда ipsec не найдена"
         return 1
@@ -167,6 +167,14 @@ start_ipsec_tunnel() {
 # Функция запуска L2TP туннеля
 start_l2tp_tunnel() {
     log "INFO" "Запускаем L2TP туннель"
+    
+    # Дополнительная диагностика xl2tpd
+    log "INFO" "Проверяем статус xl2tpd перед запуском L2TP"
+    if ! systemctl is-active --quiet xl2tpd; then
+        log "WARN" "xl2tpd неактивен, перезапускаем"
+        systemctl restart xl2tpd
+        sleep 3
+    fi
     
     # Проверяем существование control файла
     if [[ ! -d "$(dirname "$L2TP_CONTROL")" ]]; then
@@ -181,24 +189,64 @@ start_l2tp_tunnel() {
         chmod 600 "$L2TP_CONTROL"
     fi
     
+    # Проверяем, что xl2tpd слушает на нужном порту
+    log "INFO" "Проверяем, что xl2tpd слушает на порту 1701"
+    if ! netstat -uln | grep -q ":1701"; then
+        log "WARN" "xl2tpd не слушает на порту 1701, перезапускаем"
+        systemctl restart xl2tpd
+        sleep 5
+    fi
+    
     # Отправляем команду подключения
     echo "c $L2TP_CONNECTION" > "$L2TP_CONTROL"
     log "INFO" "Команда подключения L2TP отправлена"
     
     # Ждем появления интерфейса
     local wait_time=0
-    local max_wait=30
+    local max_wait=60  # Увеличиваем время ожидания до 60 секунд
+    
+    log "INFO" "Ожидаем появления интерфейса $TUNNEL_INTERFACE (максимум $max_wait секунд)..."
     
     while [[ $wait_time -lt $max_wait ]]; do
         if ip link show "$TUNNEL_INTERFACE" >/dev/null 2>&1; then
-            log "INFO" "Интерфейс $TUNNEL_INTERFACE обнаружен"
+            log "INFO" "Интерфейс $TUNNEL_INTERFACE обнаружен через $wait_time секунд"
             return 0
         fi
+        
+        # Показываем прогресс каждые 10 секунд
+        if [[ $((wait_time % 10)) -eq 0 && $wait_time -gt 0 ]]; then
+            log "INFO" "Ожидание интерфейса $TUNNEL_INTERFACE... ($wait_time/$max_wait секунд)"
+        fi
+        
         sleep 1
         wait_time=$((wait_time + 1))
     done
     
     log "ERROR" "Интерфейс $TUNNEL_INTERFACE не появился в течение $max_wait секунд"
+    
+    # Дополнительная диагностика
+    log "INFO" "Выполняем дополнительную диагностику..."
+    
+    # Проверяем статус xl2tpd
+    log "INFO" "Статус xl2tpd:"
+    systemctl status xl2tpd --no-pager -l | head -10
+    
+    # Проверяем логи xl2tpd
+    log "INFO" "Последние логи xl2tpd:"
+    journalctl -u xl2tpd --no-pager -l --since "5 minutes ago" | tail -10
+    
+    # Проверяем, что слушает xl2tpd
+    log "INFO" "Порты, слушаемые xl2tpd:"
+    netstat -uln | grep -E "(1701|500|4500)" || log "WARN" "xl2tpd не слушает на ожидаемых портах"
+    
+    # Проверяем control файл
+    if [[ -f "$L2TP_CONTROL" ]]; then
+        log "INFO" "Содержимое control файла:"
+        cat "$L2TP_CONTROL" || log "WARN" "Не удалось прочитать control файл"
+    else
+        log "WARN" "Control файл не существует"
+    fi
+    
     return 1
 }
 
