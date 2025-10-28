@@ -1,6 +1,6 @@
 [Unit]
 Description=L2TP IPSec Tunnel Restore Service
-Documentation=https://github.com/your-repo/PROJECT7
+Documentation=https://github.com/RazBudimirRus/L2TP-Useful-auto
 After=network.target network-online.target
 Wants=network-online.target
 Requires=ipsec.service xl2tpd.service
@@ -10,6 +10,7 @@ Type=oneshot
 RemainAfterExit=yes
 User=root
 Group=root
+ExecStartPre=/bin/sleep 15
 ExecStart=/opt/l2tp-tunnel/l2tp-tunnel-restore.sh
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/true
@@ -24,8 +25,10 @@ ProtectSystem=false
 ProtectHome=false
 
 # Настройки перезапуска
-Restart=no
-RestartSec=10
+Restart=on-failure
+RestartSec=30
+StartLimitInterval=120
+StartLimitBurst=3
 TimeoutStartSec=300
 TimeoutStopSec=30
 

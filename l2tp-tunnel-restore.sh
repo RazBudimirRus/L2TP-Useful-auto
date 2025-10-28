@@ -19,6 +19,8 @@ TUNNEL_GATEWAY="172.20.179.1"
 TARGET_NETWORK="192.168.179.0/24"
 L2TP_CONTROL="/var/run/xl2tpd/l2tp-control"
 L2TP_CONNECTION="razbudimir"
+L2TP_SERVER_HOST="main.razbudimir.com"
+L2TP_SERVER_IP="78.107.255.229"
 
 # Цвета для вывода
 RED='\033[0;31m'
@@ -52,6 +54,49 @@ log() {
             echo "[$timestamp] [DEBUG] $message" >> "$LOG_FILE"
             ;;
     esac
+}
+
+# Функция проверки доступности L2TP сервера
+check_l2tp_server_availability() {
+    log "INFO" "=== Проверка доступности L2TP сервера ==="
+    
+    local server_available=false
+    
+    # Проверяем доступность по IP адресу
+    log "INFO" "Проверяем доступность L2TP сервера по IP: $L2TP_SERVER_IP"
+    if ping -c 10 -W 3 "$L2TP_SERVER_IP" >/dev/null 2>&1; then
+        log "INFO" "✓ L2TP сервер доступен по IP: $L2TP_SERVER_IP"
+        server_available=true
+        
+        # Показываем детальный пинг
+        echo -e "${BLUE}Детальный пинг до L2TP сервера ($L2TP_SERVER_IP):${NC}"
+        ping -c 10 "$L2TP_SERVER_IP"
+        echo
+    else
+        log "WARN" "⚠ L2TP сервер недоступен по IP: $L2TP_SERVER_IP"
+    fi
+    
+    # Проверяем доступность по доменному имени
+    log "INFO" "Проверяем доступность L2TP сервера по домену: $L2TP_SERVER_HOST"
+    if ping -c 10 -W 3 "$L2TP_SERVER_HOST" >/dev/null 2>&1; then
+        log "INFO" "✓ L2TP сервер доступен по домену: $L2TP_SERVER_HOST"
+        server_available=true
+        
+        # Показываем детальный пинг
+        echo -e "${BLUE}Детальный пинг до L2TP сервера ($L2TP_SERVER_HOST):${NC}"
+        ping -c 10 "$L2TP_SERVER_HOST"
+        echo
+    else
+        log "WARN" "⚠ L2TP сервер недоступен по домену: $L2TP_SERVER_HOST"
+    fi
+    
+    if [[ "$server_available" == "true" ]]; then
+        log "INFO" "✓ L2TP сервер доступен, продолжаем восстановление туннеля"
+        return 0
+    else
+        log "ERROR" "✗ L2TP сервер недоступен, отменяем восстановление туннеля"
+        return 1
+    fi
 }
 
 # Функция проверки прав root
@@ -257,6 +302,12 @@ main() {
     
     check_root
     load_config
+    
+    # Проверяем доступность L2TP сервера перед началом восстановления
+    if ! check_l2tp_server_availability; then
+        log "ERROR" "L2TP сервер недоступен, завершаем работу"
+        exit 1
+    fi
     
     local exit_code=0
     
