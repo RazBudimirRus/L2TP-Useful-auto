@@ -92,11 +92,15 @@ copy_files() {
     # Копируем основные скрипты
     cp "$SCRIPT_DIR/l2tp-tunnel-restore.sh" "$INSTALL_DIR/"
     cp "$SCRIPT_DIR/l2tp-tunnel-monitor.sh" "$INSTALL_DIR/"
+    cp "$SCRIPT_DIR/l2tp-tunnel-status.sh" "$INSTALL_DIR/"
+    cp "$SCRIPT_DIR/l2tp-tunnel-diagnostic.sh" "$INSTALL_DIR/"
     cp "$SCRIPT_DIR/tunnel-config.conf" "$INSTALL_DIR/"
     
     # Устанавливаем права
     chmod +x "$INSTALL_DIR/l2tp-tunnel-restore.sh"
     chmod +x "$INSTALL_DIR/l2tp-tunnel-monitor.sh"
+    chmod +x "$INSTALL_DIR/l2tp-tunnel-status.sh"
+    chmod +x "$INSTALL_DIR/l2tp-tunnel-diagnostic.sh"
     chmod 644 "$INSTALL_DIR/tunnel-config.conf"
     
     # Устанавливаем владельца
@@ -203,6 +207,16 @@ test_installation() {
         return 1
     fi
     
+    if [[ ! -f "$INSTALL_DIR/l2tp-tunnel-status.sh" ]]; then
+        log "ERROR" "Скрипт проверки статуса не найден"
+        return 1
+    fi
+    
+    if [[ ! -f "$INSTALL_DIR/l2tp-tunnel-diagnostic.sh" ]]; then
+        log "ERROR" "Скрипт диагностики не найден"
+        return 1
+    fi
+    
     # Проверяем сервисы
     if ! systemctl is-enabled l2tp-tunnel-restore.service >/dev/null 2>&1; then
         log "ERROR" "Сервис восстановления не включен"
@@ -217,6 +231,16 @@ test_installation() {
     
     if ! bash -n "$INSTALL_DIR/l2tp-tunnel-monitor.sh"; then
         log "ERROR" "Синтаксическая ошибка в скрипте мониторинга"
+        return 1
+    fi
+    
+    if ! bash -n "$INSTALL_DIR/l2tp-tunnel-status.sh"; then
+        log "ERROR" "Синтаксическая ошибка в скрипте проверки статуса"
+        return 1
+    fi
+    
+    if ! bash -n "$INSTALL_DIR/l2tp-tunnel-diagnostic.sh"; then
+        log "ERROR" "Синтаксическая ошибка в скрипте диагностики"
         return 1
     fi
     
@@ -238,6 +262,8 @@ show_info() {
     log "INFO" ""
     log "INFO" "Ручной запуск:"
     log "INFO" "  $INSTALL_DIR/l2tp-tunnel-restore.sh"
+    log "INFO" "  $INSTALL_DIR/l2tp-tunnel-status.sh"
+    log "INFO" "  $INSTALL_DIR/l2tp-tunnel-diagnostic.sh"
     log "INFO" ""
     log "INFO" "Не забудьте настроить $INSTALL_DIR/tunnel-config.conf под ваши параметры!"
 }

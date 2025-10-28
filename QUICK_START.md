@@ -106,8 +106,40 @@ sudo systemctl status l2tp-tunnel-monitor.service
 # Запуск восстановления туннеля
 sudo /opt/l2tp-tunnel/l2tp-tunnel-restore.sh
 
+# Интерактивная проверка состояния
+sudo /opt/l2tp-tunnel/l2tp-tunnel-status.sh
+
+# Быстрая диагностика
+sudo /opt/l2tp-tunnel/l2tp-tunnel-diagnostic.sh
+
 # Запуск мониторинга
 sudo /opt/l2tp-tunnel/l2tp-tunnel-monitor.sh
+```
+
+## 🔍 Новые возможности диагностики
+
+### Интерактивная проверка состояния
+```bash
+# Запуск интерактивного меню
+sudo /opt/l2tp-tunnel/l2tp-tunnel-status.sh
+
+# Быстрая диагностика
+sudo /opt/l2tp-tunnel/l2tp-tunnel-status.sh --quick
+
+# Проверка служб
+sudo /opt/l2tp-tunnel/l2tp-tunnel-status.sh --services
+
+# Проверка интерфейса
+sudo /opt/l2tp-tunnel/l2tp-tunnel-status.sh --interface
+```
+
+### Автоматическая диагностика
+```bash
+# Полная диагностика с отчетом
+sudo /opt/l2tp-tunnel/l2tp-tunnel-diagnostic.sh
+
+# Тихий режим (только отчет)
+sudo /opt/l2tp-tunnel/l2tp-tunnel-diagnostic.sh --report
 ```
 
 ## 🚨 Устранение неполадок
@@ -204,6 +236,8 @@ sudo systemctl daemon-reload
 - **Конфигурация:** `/opt/l2tp-tunnel/tunnel-config.conf`
 - **Основной скрипт:** `/opt/l2tp-tunnel/l2tp-tunnel-restore.sh`
 - **Скрипт мониторинга:** `/opt/l2tp-tunnel/l2tp-tunnel-monitor.sh`
+- **Интерактивная проверка:** `/opt/l2tp-tunnel/l2tp-tunnel-status.sh`
+- **Быстрая диагностика:** `/opt/l2tp-tunnel/l2tp-tunnel-diagnostic.sh`
 - **Логи:** `/var/log/l2tp-tunnel*.log`
 - **Systemd сервисы:** `/etc/systemd/system/l2tp-tunnel-*.service`
 
@@ -219,4 +253,5 @@ sudo systemctl daemon-reload
 ---
 
 **Готово!** Ваш L2TP IPSec туннель теперь будет автоматически восстанавливаться после перезагрузки сервера. 🎉
+
 
